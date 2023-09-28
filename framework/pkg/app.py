@@ -56,8 +56,10 @@ class App:
         # move avatar
         self.avatar.key_move()
         self._callback()
-        threading.Thread(target=self.threaded_callback).start()
-      
+        if self.frame%10==0:
+            threading.Thread(target=self.threaded_callback).start()
+        self.frame+=1
+        
     # visualize
     @avatar_editor_draw
     def _draw(self):
