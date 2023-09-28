@@ -1,6 +1,13 @@
 import pyxel
+import asyncio
+
 from .utils import *
 from .pyxel_avatar import *
+from .multiplay import *
+
+import threading
+
+
 
 class Params:
     WINDOW_SIZE = (8*12,8*14)
@@ -27,6 +34,19 @@ class App:
         self.params = params
         # initialize avatar
         self.avatar = Avatar()
+        self.name="naoyashi"
+        self.frame = 0
+    
+    async def _callback(self):
+        result = await Transmission(self.name, self.avatar.position, self.avatar.style)
+        ip, info = result.split(":")
+        info = info.split(",")
+        print(ip, info)
+        
+    def threaded_callback(self):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self._callback())
     
     # process
     @avatar_editor_update
@@ -35,6 +55,8 @@ class App:
         self.avatar.style = avatar_editor.avatar.style
         # move avatar
         self.avatar.key_move()
+        self._callback()
+        threading.Thread(target=self.threaded_callback).start()
       
     # visualize
     @avatar_editor_draw
