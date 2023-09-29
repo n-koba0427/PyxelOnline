@@ -36,12 +36,24 @@ class App:
         self.avatar = Avatar()
         self.name="naoyashi"
         self.frame = 0
+        self.others = {}
     
     async def _callback(self):
         result = await Transmission(self.name, self.avatar.position, self.avatar.style)
-        ip, info = result.split(":")
-        info = info.split(",")
-        print(ip, info)
+        for data in result.split("|"):
+            ip, info = data.split(":")
+            info = info.split(",")
+            
+            if not ip in self.others:
+                self.others[ip] = Avatar()
+            
+            _name = info[0]
+            _position = list(map(int, info[1:3]))
+            _style = list(map(int, info[3:]))
+            self.others[ip].name = _name
+            self.others[ip].position = _position
+            self.others[ip].style = _style
+                
         
     def threaded_callback(self):
         loop = asyncio.new_event_loop()
@@ -56,7 +68,7 @@ class App:
         # move avatar
         self.avatar.key_move()
         self._callback()
-        if self.frame%10==0:
+        if self.frame%30==0:
             threading.Thread(target=self.threaded_callback).start()
         self.frame+=1
         
@@ -66,3 +78,6 @@ class App:
         pyxel.cls(11)
         # draw avatar
         self.avatar.draw()
+        
+        for others_avatar in self.others.values():
+            others_avatar.draw()
